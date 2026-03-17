@@ -34,9 +34,23 @@ const connectionText = document.getElementById('connection-text');
 const totalThreadsEl = document.getElementById('total-threads');
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
-const migrateBtn = document.getElementById('migrate-btn');
 const userInfo = document.getElementById('user-info');
 const userNameEl = document.getElementById('user-name');
+
+// 로그인/로그아웃 UI 업데이트
+function updateUserUI(isLoggedIn) {
+  if (isLoggedIn && state.user) {
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'inline-block';
+    if (userInfo) userInfo.style.display = 'inline-flex';
+    if (userNameEl) userNameEl.innerText = state.user.displayName || state.user.email;
+  } else {
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (userInfo) userInfo.style.display = 'none';
+    if (userNameEl) userNameEl.innerText = '';
+  }
+}
 
 // Firebase 초기화
 let auth, db;
@@ -67,9 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEvents() {
-  loginBtn.onclick = loginWithGoogle;
-  logoutBtn.onclick = logout;
-  migrateBtn.onclick = migrateDataFromSheet;
+  if (loginBtn) loginBtn.onclick = loginWithGoogle;
+  if (logoutBtn) logoutBtn.onclick = logout;
 }
 
 async function loginWithGoogle() {
@@ -132,14 +145,6 @@ async function fetchFromFirestore() {
     }
 }
 
-async function migrateDataFromSheet() {
-    // 시트리스 모드에서는 이 기능이 필요 없으므로 제거하거나 안내로 대체합니다.
-    alert("이제 시트리스 모드입니다! 모든 데이터는 자동으로 클라우드에 저장됩니다.");
-}
-
-async function fetchData() {
-  // 구 방식(시트 연동) 함수 - 이제 사용하지 않음
-}
 
 function updateStatus(isOk, text = "실시간 연결됨") {
   connectionDot.className = `dot ${isOk ? 'green' : 'red'}`;
