@@ -136,9 +136,19 @@ async function fetchFromFirestore() {
         const querySnapshot = await getDocs(q);
         const threads = [];
         querySnapshot.forEach((doc) => {
-            threads.push({ id: doc.id, ...doc.data() });
+            let data = doc.data();
+            threads.push({ id: doc.id, ...data });
         });
-        return threads.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        
+        // 날짜 파싱 헬퍼 (REST API 형식 대응)
+        const parseDate = (d) => {
+          if (!d) return 0;
+          if (d.toDate) return d.toDate().getTime(); // Firestore SDK Timestamp
+          if (typeof d === 'string') return new Date(d).getTime(); // ISO String
+          return new Date(d).getTime(); // Fallback
+        };
+
+        return threads.sort((a, b) => parseDate(b.lastUpdated) - parseDate(a.lastUpdated));
     } catch (err) {
         console.error("Firestore 로드 실패:", err);
         return [];
@@ -193,7 +203,7 @@ function renderDashboard() {
       <h3>${thread.subject}</h3>
       <p>${lastMsg.summary || '내용 없음'}</p>
       <div class="footer-info">
-        <span>📅 ${new Date(thread.lastUpdated).toLocaleDateString()}</span>
+        <span>📅 ${new Date(thread.lastUpdated?.toDate ? thread.lastUpdated.toDate() : thread.lastUpdated).toLocaleDateString()}</span>
         <button class="analyze-btn" data-index="${index}">분석</button>
       </div>
     `;
@@ -244,7 +254,7 @@ function showDetail(thread) {
   body.innerHTML = thread.messages.map(m => `
     <div class="timeline-item ${m.type.includes('받음') ? 'received' : 'sent'}">
       <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">
-        ${m.person} • ${new Date(m.date).toLocaleString()}
+        ${m.person} • ${new Date(m.date?.toDate ? m.date.toDate() : m.date).toLocaleString()}
       </div>
       <div>${m.summary}</div>
     </div>
