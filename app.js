@@ -193,12 +193,19 @@ function renderDashboard() {
     const card = document.createElement('div');
     card.className = 'thread-card';
 
-    const categoryClass = thread.category === "자동 메일" ? "auto" : "normal";
+    let categoryClass = "normal";
+    let categoryIcon = "📥";
+    let categoryShort = thread.category;
+
+    if (thread.category === "자동 메일") { categoryClass = "auto"; categoryIcon = "🤖"; categoryShort = "자동"; }
+    else if (thread.category === "엑셀비드 메일") { categoryClass = "excelbid"; categoryIcon = "🏢"; categoryShort = "엑셀비드"; }
+    else if (thread.category === "보낸 메일") { categoryClass = "sent_mail"; categoryIcon = "📤"; categoryShort = "보냄"; }
+    else if (thread.category === "받은 메일") { categoryClass = "received_mail"; categoryIcon = "📥"; categoryShort = "받음"; }
 
     card.innerHTML = `
       <div class="card-meta">
         <span class="badge ${thread.status.includes('종결') ? 'done' : 'new'}">${thread.status}</span>
-        <span class="badge category ${categoryClass}">${thread.category === "자동 메일" ? '🤖 자동' : '👥 일반'}</span>
+        <span class="badge category ${categoryClass}">${categoryIcon} ${categoryShort}</span>
       </div>
       <h3>${thread.subject}</h3>
       <p>${lastMsg.summary || '내용 없음'}</p>
